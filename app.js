@@ -25,9 +25,23 @@ async function signup() {
 
     try {
         await window.createUserWithEmailAndPassword(window.auth, email, password);
-        errorDiv.textContent = '';
+        await window.signOut(window.auth);
+        errorDiv.style.color = '#27ae60';
+        errorDiv.textContent = 'Account created! Please log in.';
+        document.getElementById('signupEmail').value = '';
+        document.getElementById('signupPassword').value = '';
+        setTimeout(() => toggleAuthForm(), 1500);
     } catch (error) {
-        errorDiv.textContent = error.message;
+        errorDiv.style.color = '';
+        if (error.code === 'auth/email-already-in-use') {
+            errorDiv.textContent = 'This email is already registered. Please login instead.';
+        } else if (error.code === 'auth/weak-password') {
+            errorDiv.textContent = 'Password must be at least 6 characters.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorDiv.textContent = 'Please enter a valid email address.';
+        } else {
+            errorDiv.textContent = 'Registration failed. Please try again.';
+        }
     }
 }
 
@@ -45,7 +59,15 @@ async function login() {
         await window.signInWithEmailAndPassword(window.auth, email, password);
         errorDiv.textContent = '';
     } catch (error) {
-        errorDiv.textContent = error.message;
+        if (error.code === 'auth/too-many-requests') {
+            errorDiv.textContent = 'Account temporarily blocked due to too many failed attempts. Please try again later or reset your password.';
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+            errorDiv.textContent = 'Invalid email or password. Please try again.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorDiv.textContent = 'Please enter a valid email address.';
+        } else {
+            errorDiv.textContent = 'Login failed. Please try again.';
+        }
     }
 }
 
